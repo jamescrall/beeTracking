@@ -20,7 +20,7 @@ function trackingData = trackCCNestVideoP(vid, brFilt, brThresh, bIm, nestOutlin
     parfor i = 1:nframes
         %%
         try
-            
+            i
             thr = 10;
             im = rgb2gray(read(vid,i));
             imd = abs(int8(bIm) - int8(im));
