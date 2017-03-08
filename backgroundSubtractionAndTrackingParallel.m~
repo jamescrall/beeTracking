@@ -30,7 +30,6 @@ for zz = 1:numel(list)
 end
 
 %%
-vis = 0;
 for zz = 1:numel(list)
     filename = list(zz).name
     %Create VideoReader object
@@ -40,7 +39,7 @@ for zz = 1:numel(list)
     
     
     %% Track!
-    %parpool(4);
+    parpool(4);
     
     %% Track nest video
     
@@ -66,9 +65,8 @@ for zz = 1:numel(list)
     end
     
     %% Save data
-    bIm = backgroundImages(zz).bIm;
-    nestOutline = backgroundImages(zz).nestOutline;
-    save(strrep(vid.Name, '.avi', 'mat'), 'nestTrackingData', 'forageTrackingData', 'bIm', 'nestOutline');
+    bIm = backgroundImages(zz).
+    save(strrep(vid.Name, '.avi', 'mat'), 'nestTrackingData', 'forageTrackingData');
     
     %% visualization check, untested
     if vis == 1

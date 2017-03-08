@@ -1,7 +1,7 @@
-function trackingData = trackCCNestVideoP(vid, brFilt, brThresh, bIm, nestOutline, taglist)
+function trackingData = trackCCNestVideoP(vid, brFilt, brThresh, bIm, nestOutline, taglist, nframes)
     
     % Set up dummy variables
-    nframes = vid.NumberOfFrames;
+    %nframes = vid.NumberOfFrames;
     
     tags = taglist(:,1);
     xcent = nan(nframes, numel(tags));
@@ -20,7 +20,6 @@ function trackingData = trackCCNestVideoP(vid, brFilt, brThresh, bIm, nestOutlin
     parfor i = 1:nframes
         %%
         try
-            i
             thr = 10;
             im = rgb2gray(read(vid,i));
             imd = abs(int8(bIm) - int8(im));
