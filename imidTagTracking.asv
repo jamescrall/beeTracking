@@ -6,58 +6,74 @@ masDir = uigetdir(pwd, 'Choose parent directory');
 subDirs = dir(masDir);
 subDirs = subDirs(3:end); %Ignore first two elements in directory
 
-%%
-%Loop over folders to first manually input nest outlines for all colonies
+generateBackgroundImagesForSubfolders(subDirs, masDir);
+%% Loop across subdirectories
+
 for aa = 1:numel(subDirs)
+    
     curDir = [masDir '\' subDirs(aa).name];
+    
     if isdir(curDir)
         %% Create list of movie pairs
         cd(curDir);
         list = dir('*NC.avi');
+        outfile = strrep(list(1).name, 'NC.avi','backgroundImages.mat');
+        if exist(outfile) == 2
+            opt = questdlg(strcat({'Background images for "'}, curDir, {'" already exists - overwrite?'}), 'Yes', 'No');
+            
+            switch opt
+                case 'Yes'
+                    disp('Overwriting file...');
+                case 'No'
+                    disp('Not overwriting - loading file instead...');
+                    load(outfile);
+            end
+        end
         
-        %Read in taglist
-        taglist = dir('*taglist.csv');
-        taglist = csvread(taglist.name);
+        backIm = backImFromFilelist(list,3,1,12); %Calculate background images across these videos and plot diagnostic results
+        pause(1);
         %% generate manual inputs of nest outlines
         backgroundImages = struct();
         
+        figure(1);
         
-        for zz = 1:numel(list)
-            %%
-            vid = VideoReader(list(zz).name);
-            bIm = medianImage(vid,20);
-            % calculate background for both nest and
-            imshow(imadjust(bIm));
-            if zz == 1
-                title('New nest!: outline nest structure...');
-                
-                [nestOutline xi yi] = roipoly();
-            else
-                title('Modifications?');
-                
-                h = impoly(gca, [xi yi]);
-                addNewPositionCallback(h(1),@(p) assignin('base','xy',p));
-                wait(h);
-                xi = xy(:,1);
-                yi = xy(:,2);
-                nestOutline = roipoly(bIm, xy(:,1), xy(:,2));
-                
-            end
-            backgroundImages(zz).bIm = bIm;
-            backgroundImages(zz).filename = list(zz).name;
-            backgroundImages(zz).path = pathname;
-            backgroundImages(zz).nestOutline = nestOutline;
+        imshow(backIm);
+        
+        if ~exist('xi')
             
-            clear bIm
-            clear nestOutline
+            title('New nest!: outline nest structure...');
+            
+            [nestOutline xi yi] = roipoly();
+            
+        else
+            title('Modifications?');
+            
+            h = impoly(gca, [xi yi]);
+            addNewPositionCallback(h(1),@(p) assignin('base','xy',p));
+            wait(h);
+            xi = xy(:,1);
+            yi = xy(:,2);
+            nestOutline = roipoly(backIm, xy(:,1), xy(:,2));
+            
         end
-        %
-        filename = list(1).name;
-        save(strrep(filename, 'NC.avi', 'backgroundImages.mat'), 'backgroundImages');
+        backgroundImages.backIm = backIm;
+        backgroundImages.filename = list(1).name;
+        backgroundImages.path = curDir;
+        backgroundImages.nestOutline = nestOutline;
+        close all
+        
     else
         continue
     end
+    %
+    filename = list(1).name;
+    save(outfile, 'backgroundImages');
+    clear backIm
+    clear nestOutline
+    
 end
+
+%% Find optimal tracking parameters
 
 %% Track!
 %Gear up parallel pool
