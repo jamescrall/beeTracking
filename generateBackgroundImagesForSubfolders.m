@@ -6,7 +6,7 @@ function [] = generateBackgroundImagesForSubfolders(subDirs, masDir)
 %%
 for aa = 1:numel(subDirs)
     
-    curDir = [masDir '\' subDirs(aa).name];
+    curDir = [masDir '/' subDirs(aa).name];
     
     if isdir(curDir)
         %% Create list of movie pairs
@@ -60,6 +60,7 @@ for aa = 1:numel(subDirs)
         close all
         
     else
+        disp(strcat('Directory "', curDir, {'" not found'}));
         continue
     end
     %

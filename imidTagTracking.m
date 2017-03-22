@@ -7,23 +7,50 @@ parDir = uigetdir(pwd, 'Choose parent directory');
 cd(parDir)
 dirList = dir('*colPos*');
 
-for i = 1:numel(dirList)
+%for i = 1:numel(dirList)
+for i = 1:2
     %%
-    masDir = [parDir '\' dirList(i).name];
+    masDir = [parDir '/' dirList(i).name];
     subDirs = dir(masDir);
     subDirs = subDirs(3:end); %Ignore first two elements in directory
     
-    generateBackgroundImagesForSubfolders(subDirs, masDir);
+    generateBackgroundImagesForSubfolders(subDirs, masDir)
     clear xi
     clear yi
 end
 
-%% Find optimal tracking parameters
+%% Find optimal tracking parameters?
+choice = questdlg('Optimize tracking parameters?', 'Yes', 'No');
+switch choice
+    case 'Yes'
+        %threshVals = [0.001 0.005 0.01 0.05 0.08 0.1 0.12 0.15 0.2 0.3 0.5 1 1.5 2 3 4 5];
+        %filtVals = [8 10 12 14 16 18 20];
+        %parpool(4);
+        threshVals = [0.5 1 2 4];
+        filtVals = [10 15 20];
+        nframes = 10;
+        [forvidfilename forvidpathname] = uigetfile({'*avi', 'Choose foraging movie to optimize'});
+        forvid = VideoReader([forvidpathname forvidfilename]);
+        [nestvidfilename nestvidpathname] = uigetfile({'*avi', 'Choose foraging movie to optimize'});
+        nestvid = VideoReader([nestvidpathname nestvidfilename]);
+        [tagfilename tagpathname] = uigetfile({'*csv', 'Choose tag data file'});
+        taglist = readtable([tagpathname tagfilename], 'readVariableNames', 0);
+        taglist = table2array(taglist(:,1));
+        figure(1)
+        [forThresh forFilt] = optimizeTrackingParameters(forvid,threshVals,filtVals,nframes,taglist)
+        %Set threshold ranges
+        figure(2)
+        [nestThresh nestFilt] = optimizeTrackingParameters(nestvid,threshVals,filtVals,nframes,taglist);
+    case 'No'
+        return
+end
+
+
+
 
 %% Track!
 %Gear up parallel pool
 parpool(4);
-
 brFiltNest = [10 10];
 brThreshNest = 0.1;
 brFiltFor = [9 9];
