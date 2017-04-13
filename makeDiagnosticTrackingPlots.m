@@ -11,7 +11,7 @@ for i = 1:numel(masterData) %Loop across colonies
     for j = 1:numel(colDat) %loop across days
 
         trialDat = colDat(j).trackingData;
-        backIm = colDat(j).backIm;
+        backIm = colDat(j).nestBackIm;
         for k = 1:numel(trialDat)
 
             subplot(3,4,k)
