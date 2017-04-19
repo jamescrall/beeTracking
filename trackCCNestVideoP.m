@@ -1,4 +1,4 @@
-function out = trackCCNestVideoP(vid, brFilt, brThresh, bIm, nestOutline, taglist, nframes)
+function out = trackCCNestVideoP(vid, brFilt, brThresh, bIm, nestOutline, taglist, nframes, thr)
 
 % Set up dummy variables
 %nframes = vid.NumberOfFrames;
@@ -20,7 +20,7 @@ tic
 parfor i = 1:nframes
     %%
      try
-    thr = 15;
+    %thr = 15;
     im = rgb2gray(read(vid,i));
     imd = abs(int8(bIm) - int8(im));
     imd = imd > thr;
@@ -35,7 +35,7 @@ parfor i = 1:nframes
     impd = imdilate(imd,se); %im permissive dilation
     
     imf = im.*uint8(impd);
-    F = locateCodes(imf,'threshMode', 1,'sizeThresh', [300 1500], 'bradleyFilterSize', brFilt, 'bradleyThreshold', brThresh, 'vis', 0);
+    F = locateCodes(imf,'threshMode', 1,'sizeThresh', [300 1500], 'bradleyFilterSize', brFilt, 'bradleyThreshold', brThresh, 'vis', 1);
     if ~isempty(F)
         rtags = [F.number];
         for j = 1:ntags

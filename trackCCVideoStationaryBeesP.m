@@ -79,6 +79,7 @@ trackingData(:,:,3) = frontx;
 trackingData(:,:,4) = fronty;
 out = struct();
 out.trackingData = trackingData;
-out.sampleFrames = sampFrames;
+%out.sampleFrames = sampFrames;
 out.sampleFramesIndex = sampFrameIndex;
+out.vidObject = vid;
 close(hbar);

@@ -6,7 +6,7 @@ function [] = generateBackgroundImagesForSubfolders(subDirs, masDir)
 %%
 for aa = 1:numel(subDirs)
     
-    curDir = [masDir '/' subDirs(aa).name];
+    curDir = [masDir '\' subDirs(aa).name];
     
     if isdir(curDir)
         %% Create list of movie pairs
@@ -14,16 +14,23 @@ for aa = 1:numel(subDirs)
         list = dir('*NC.avi');
         outfile = strrep(list(1).name, 'NC.avi','backgroundImages.mat');
         if exist(outfile) == 2
-            %             opt = questdlg(strcat({'Background images for "'}, curDir, {'" already exists - overwrite?'}), 'Yes', 'No');
-            %
-            %             switch opt
-            %                 case 'Yes'
-            %                     disp('Overwriting file...');
-            %                 case 'No'
-            disp(strcat({'File already exists, skipping file '}, outfile));
-            continue
-            %                    load(outfile);
-            %             end
+            load(strcat(pwd, '\', outfile))
+            figure(1);
+            backIm =backgroundImages.backIm;
+            imshow(backIm);
+            hold on;
+            h = imshow(cat(3,ones(size(backIm)), zeros(size(backIm)), zeros(size(backIm))));
+            set(h, 'AlphaData', backgroundImages.nestOutline.*0.5);
+            opt = questdlg(strcat({'Background images for "'}, curDir, {'" already exists - overwrite?'}), 'Yes', 'No');
+            
+            switch opt
+                case 'Yes'
+                    disp('Overwriting file...');
+                case 'No'
+                    disp(strcat({'File already exists, skipping file '}, outfile));
+                    continue
+                    %                    load(outfile);
+            end
         end
         
         backIm = backImFromFilelist(list,3,1,12); %Calculate background images across these videos and plot diagnostic results

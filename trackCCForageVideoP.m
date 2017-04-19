@@ -1,4 +1,4 @@
-function trackingData = trackCCForageVideoP(forVid, brFilt, brThresh, bIm, taglist, nframes)
+function trackingData = trackCCForageVideoP(forVid, brFilt, brThresh, bIm, taglist, nframes, thr)
     %nframes = forVid.NumberOfFrames;
     
     %Need to add sections for tag-agnostic tracking of bee blobs on nectar and
@@ -16,7 +16,7 @@ function trackingData = trackCCForageVideoP(forVid, brFilt, brThresh, bIm, tagli
         %%
         try
             
-            thr = 5;
+            %thr = 5;
             im = rgb2gray(read(forVid,i));
             imd = abs(int8(bIm) - int8(im));
             imd = imd > thr;
