@@ -93,14 +93,14 @@ end
 %Gear up parallel pool
 parpool(4);
 webread('http://lab.debivort.org/mu.php?id=jdrcBench&st=1');
-%% 
+%
 if numel(brFiltNest) == 1
     brFiltNest = [brFiltNest brFiltNest];
     brFiltFor = [brFiltFor brFiltFor];
 end
 
-%for bb = 1:numel(dirList) %Loop across colony positions
- for bb =6   %% Data from colony position-level directory
+for bb = 1:numel(dirList) %Loop across colony positions
+    %% Data from colony position-level directory
     masDir = [parDir '\' dirList(bb).name];
     
     %Read in taglist data
@@ -145,7 +145,6 @@ end
                 nframes = vid.NumberOfFrames;
                 outfile = strrep(vid.Name, '.avi', 'mat');
                 filecheck = strcat(outfile, '.mat');
-                
                 if exist(filecheck) ~= 2 %If the output data doesn't exist already, proceed to tracking - otherwise skip
                     %% Track nest video
                     % Set tracking parameters

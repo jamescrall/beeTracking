@@ -1,9 +1,10 @@
-function [masterData nestBackIm forBackIm] = postprocessColonyFolder(directory, taglist)
+function [masterData nestBackIm forBackIm nestOutline] = postprocessColonyFolder(directory, taglist)
 cd(directory);
 list = dir('*NCmat.mat');
 backgroundImages = dir('*backgroundImages*');
 load(backgroundImages.name);
 nestBackIm = backgroundImages.backIm;
+nestOutline = backgroundImages.nestOutline;
 %%
 masterData = struct();
 movThresh = 2; %
@@ -33,14 +34,26 @@ for i = 1:numel(list)
     dy = diff(nTrackingData(:,:,2))./dt;
     speeds = sqrt(dx.^2 + dy.^2);
     
-    %Clean out any unrealistically fast movements
-    maxSpeed = 400; %maximum allowable speeds in
-    cleanInd = speeds > maxSpeed;
+    %Repeat for foraging chamber;
+    dxf = diff(forageTrackingData(:,:,1))./dt;
+    dyf = diff(forageTrackingData(:,:,2))./dt;
+    speedsF = sqrt(dxf.^2 + dyf.^2);
     
+    %Clean out any unrealistically fast movements
+    maxSpeed = 400; %maximum allowable speeds in nest chamber
+    maxSpeedF = 600; %Ditto for foraging
+    cleanInd = speeds > maxSpeed;
+    cleanIndF = speedsF > maxSpeedF;
+    
+    %Clean outliers for nest speeds
     dx(cleanInd) = NaN;
     dy(cleanInd) = NaN;
     speeds(cleanInd) = NaN;
     
+    %Clean outliers for forage speeds
+    dxf(cleanIndF) = NaN;
+    dyf(cleanIndF) = NaN;
+    speedsF(cleanIndF) = NaN;
     
     %Generate logical matrices of whether each bee is on the nest for each
     %timesteps
@@ -59,17 +72,24 @@ for i = 1:numel(list)
     movInd = speeds > movThresh; %Index of when bees are moving
     movInd = double(movInd);
     movInd(isnan(speeds)) = NaN;
+    
+    movIndF = speedsF > movThresh; %Index of when bees are moving
+    movIndF = double(movIndF);
+    movIndF(isnan(speedsF)) = NaN;
     %%
     masterData(i).filename = list(i).name;
-    masterData(i).speeds = speeds;
+    masterData(i).nestSpeeds = speeds;
     masterData(i).taglist = taglist;
     %masterData(i).timestamps = timestamps;
     masterData(i).onNestIndex = onNest;
-    masterData(i).movingIndex = movInd;
+    masterData(i).nestMovingIndex = movInd;
+    masterData(i).forageSpeeds = speedsF;
+    masterData(i).forageMovingIndex = movIndF;
     masterData(i).frameCounts = sum(~isnan(xs));
     masterData(i).trialTime = trialTime;
     masterData(i).nestCoordinates = nTrackingData;
     masterData(i).forageCoordinates = forageTrackingData;
+    %masterData(i).nestOutline = backgroundImages.nestOutline;
     %masterData(i).backIm = backgroundImages.backIm;
     %     %%
     %     if vis == 1
