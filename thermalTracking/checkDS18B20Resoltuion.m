@@ -1,10 +1,9 @@
-a = arduino('/dev/tty.usbmodem1421', 'Uno', 'Libraries', 'PaulStoffregen/OneWire');
+a = arduino('COM8', 'Uno', 'Libraries', 'PaulStoffregen/OneWire');
 
 %%
 sensor = addon(a, 'PaulStoffregen/OneWire', 'D2');
 therm1 = sensor.AvailableAddresses{1};
-therm
-2 = sensor.AvailableAddresses{2};
+therm2 = sensor.AvailableAddresses{2};
 %%
 t1 = [];
 t2 = [];
