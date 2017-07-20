@@ -32,3 +32,5 @@ src1.ExposureMode = 'Manual';
 src1.Exposure = 2.4;
 src1.Brightness = 7.4;
 %src.FrameRate = 30;
+
+%% Run experiments
