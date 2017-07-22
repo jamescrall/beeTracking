@@ -1,8 +1,8 @@
 imaqreset
 
 %% Initialize FLIR A65
-thermCam = pgCameoinput('gige', 1, 'Mono16'); %connect to the first gige camera
-pgCam.FramesPerTrigger = 1;
+thermCam = videoinput('gige', 1, 'Mono16'); %connect to the first gige camera
+thermCam.FramesPerTrigger = 1;
 triggerconfig(thermCam, 'Manual');
 source = thermCam.Source; %get the source object
 
@@ -14,7 +14,7 @@ source.TemperatureLinearResolution = 'High';
 
 
 %% Initialize point grey (Point Grey Blackfly 2448x2048 monochrome
-pgCam = pgCameoinput('pointgrey', 1, 'F7_Mono8_2448x2048_Mode0');
+pgCam = videoinput('pointgrey', 1, 'F7_Mono8_2448x2048_Mode0');
 triggerconfig(pgCam, 'Manual');
 pgCam.FramesPerTrigger = 1;
 src1 = getselectedsource(pgCam);
@@ -39,10 +39,11 @@ src1.Brightness = 7.4;
 
 preview(pgCam);
 %% Run experiment
+
 expTime = 30; %Length of experiment in minutes
 start(thermCam); %Start FLIR
 start(pgCam); %Start point grey
-expPref = 'tmp';
+expPref = 'exp2';
 filenamebase = strcat(expPref,datestr(now, '_dd-mmm-yyyy_HH-MM-SS'));
 
 thermVid = VideoWriter(strcat(filenamebase, 'Thermal'), 'Archival');
@@ -51,18 +52,40 @@ visVid = VideoWriter(strcat(filenamebase, 'Visual.avi'));
 open(thermVid);
 open(visVid);
 times = [];
-
+% %% Run preview?
+% 
+% 
+% while 1 %Start timer
+%     %%
+%     thermIm = peekdata(thermCam,1);
+%     visIm = peekdata(pgCam,1);
+%     subplot(2,1,1);
+%     imagesc(thermIm);
+%     subplot(2,1,2);
+%     imshow(visIm);
+%     drawnow
+%     
+% end
+% %% preview only FLIR
+% while 1 %Start timer
+%     %%
+%     thermIm = peekdata(thermCam,1);
+%     imagesc(thermIm);
+%     drawnow
+%     
+% end
+%%
 tic
 while toc < expTime*60 %Start timer
     %%
-    thermIm = peekdata(thermVid,1);
-    visIm = peekdata(vidVid,1);
+    thermIm = peekdata(thermCam,1);
+    visIm = peekdata(pgCam,1);
     times = [times now];
     writeVideo(thermVid, thermIm);
     writeVideo(visVid, visIm);
     
 end
-
+%
 %Close video feeds
 stop(thermCam);
 stop(pgCam);
@@ -73,4 +96,3 @@ save(strcat(filenamebase, 'timestamps.mat'), 'times');
 close(thermVid);
 close(visVid);
 
-save(
