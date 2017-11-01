@@ -8,7 +8,7 @@ source = thermCam.Source; %get the source object
 
 %To get temperature linear data, the following GenICam registers needs
 %to be set
-source.SensorGainMode = 'HighGainMode';
+source.SensorGainMode = 'LowGainMode';
 source.TemperatureLinearMode = 'On';
 source.TemperatureLinearResolution = 'High';
 
@@ -32,7 +32,7 @@ src1.Sharpness = 0;
 src1.GammaMode = 'Manual';
 src1.Gamma = 1;
 src1.GainMode = 'Manual';
-src1.Gain = 18;
+src1.Gain = 10;
 src1.ExposureMode = 'Manual';
 src1.Exposure = 2.4;
 src1.Brightness = 7.4;
@@ -40,10 +40,10 @@ src1.Brightness = 7.4;
 preview(pgCam);
 %% Run experiment
 
-expTime = 30; %Length of experiment in minutes
+expTime = 60; %Length of experiment in minutes
 start(thermCam); %Start FLIR
 start(pgCam); %Start point grey
-expPref = 'exp2';
+expPref = 'testAug18exp2';
 filenamebase = strcat(expPref,datestr(now, '_dd-mmm-yyyy_HH-MM-SS'));
 
 thermVid = VideoWriter(strcat(filenamebase, 'Thermal'), 'Archival');
@@ -52,28 +52,30 @@ visVid = VideoWriter(strcat(filenamebase, 'Visual.avi'));
 open(thermVid);
 open(visVid);
 times = [];
-% %% Run preview?
-% 
-% 
-% while 1 %Start timer
-%     %%
-%     thermIm = peekdata(thermCam,1);
-%     visIm = peekdata(pgCam,1);
-%     subplot(2,1,1);
-%     imagesc(thermIm);
-%     subplot(2,1,2);
-%     imshow(visIm);
-%     drawnow
-%     
-% end
-% %% preview only FLIR
-% while 1 %Start timer
-%     %%
-%     thermIm = peekdata(thermCam,1);
-%     imagesc(thermIm);
-%     drawnow
-%     
-% end
+%% Run preview?
+
+
+while 1 %Start timer
+    %%
+    thermIm = peekdata(thermCam,1);
+    visIm = peekdata(pgCam,1);
+    subplot(2,1,1);
+    imagesc(thermIm);
+    colormap jet
+    subplot(2,1,2);
+    imshow(visIm);
+    drawnow
+    
+end
+%% preview only FLIR
+while 1 %Start timer
+    %%
+    thermIm = peekdata(thermCam,1);
+    imagesc(thermIm);
+    colormap jet
+    drawnow
+    
+end
 %%
 tic
 while toc < expTime*60 %Start timer
