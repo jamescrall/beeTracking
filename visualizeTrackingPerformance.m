@@ -2,9 +2,9 @@ function [] = visualizeTrackingPerformance();
 %%
 %Currently no inputs
 [filename pathname] = uigetfile('*', 'choose nest video with tracked data');
-nestvid = VideoReader([pathname '\' filename]);
-forvid = VideoReader([pathname '\' strrep(filename, 'NC', 'FC')]);
-load([pathname '\' strrep(filename, '.avi', 'mat')]);
+nestvid = VideoReader([pathname  filename]);
+forvid = VideoReader([pathname  strrep(filename, 'NC', 'FC')]);
+load([pathname  strrep(filename, '.avi', 'mat')]);
 nestData = nestTrackingData.trackingData;
 forData = forageTrackingData;
 nframes = nestvid.NumberOfFrames;

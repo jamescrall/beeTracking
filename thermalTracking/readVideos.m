@@ -1,11 +1,13 @@
 [filename pathname] = uigetfile('*');
 vid = VideoReader([pathname filename]);
 
+%% Video reader file for 
+
 %%
 for i = 1:vid.NumberOfFrames
 im = read(vid,i);
 im = convertThermalImage(im);
-imagesc(im, [30 42]);
+imagesc(im);
 colormap jet
 drawnow
 end

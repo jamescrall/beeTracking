@@ -1,4 +1,6 @@
-vars = {'netDensity' 'day' 'colony' 'treatment'};
+%% Generate "masterData" object with "compileAndAnalyzeMaster.m"
+
+vars = {'interactionRate', 'netDensity','day' ,'colony' ,'treatment', 'time'};
 
 %%
 for i = 1:numel(masterData)
@@ -10,6 +12,7 @@ for i = 1:numel(masterData)
         trt = 1;
     else trt = 0;
     end
+    firstDay = masterData(i).firstDay
     %% loop across days
     for j = 1:numel(colDat)
         %%
@@ -17,33 +20,58 @@ for i = 1:numel(masterData)
         taglist = trackDat(1).taglist;
         nbees = numel(taglist);
         refMat = zeros(nbees, nbees);
-        %%
         for k = 1:numel(trackDat)
             %%
-            intMat = trackDat(k).intMatAv > 0;
-            refMat = refMat + intMat;
+            try
+                time = trackDat(k).trialTime - firstDay + 1;
+                intMatAv = trackDat(k).intMatAv;
+                
+                ey = eye(size(intMatAv,1));
+                intMatAv(logical(ey)) = NaN; %Remove diagonal of matrix
+                intMat = double(intMatAv > 0);
+                intMat(isnan(intMatAv)) = NaN;
+                
+                intRate = nanmean(nanmean(intMatAv));
+                netDensity = nanmean(nanmean(intMat));
+                
+                
+                netSum = [intRate netDensity j i trt time];
+            catch
+                disp('Error here');
+                return
+            end
+            
+            
+            if ~exist('netData');
+                netData = netSum;
+            else
+                netData = [netData; netSum];
+            end
+            
         end
-        
-        intMat = double(refMat > 0);
-        for l = 1:nbees
-            intMat(l,l) = NaN;
-        end
-        
-        masterData(i).colonyData(j).intMat = intMat;
-        
-        netDensity = nanmean(nanmean(intMat));
+        %%
+        %         %%
+        %         for k = 1:numel(trackDat)
+        %             %%
+        %             intMat = trackDat(k).intMatAv > 0;
+        %             refMat = refMat + intMat;
+        %         end
+        %
+        %         intMat = double(refMat > 0);
+        %         for l = 1:nbees
+        %             intMat(l,l) = NaN;
+        %         end
+        %
+        %         masterData(i).colonyData(j).intMat = intMat;
+        %
+        %         netDensity = nanmean(nanmean(intMat));
         
         %Append data on number of valid  trials
         
         
         %Write to table
         
-        netSum = [netDensity j i trt];
-        if ~exist('netData');
-            netData = netSum;
-        else
-            netData = [netData; netSum];
-        end
+        
         
     end
     
@@ -53,5 +81,5 @@ end
 
 %%
 netData = array2table(netData);
-netData.Properties.Variab`leNames = vars;
-writetable(netData,'/Users/james/Documents/chronidBeeImidacloprid/networkSummaryData.csv');
+netData.Properties.VariableNames = vars;
+writetable(netData,'/Users/james/Documents/chronicBeeImidacloprid/networkSummaryDataOct2.csv');
