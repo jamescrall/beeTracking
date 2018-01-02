@@ -1,4 +1,4 @@
-%% All relevant files need to be loaded into a single, separate folder (no data from other experiments)
+cal% All relevant files need to be loaded into a single, separate folder (no data from other experiments)
 [filename pathname] = uigetfile('*');
 cd(pathname);
 %% Load in data set from single experiment
@@ -179,6 +179,7 @@ for j = ind
 end
 plot(out(:,1), out(:,2), 'ro');
 %% Check transformation option #2
+
 while 1
     figure(1);
     imshow(visIm);

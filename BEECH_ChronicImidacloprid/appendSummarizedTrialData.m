@@ -7,7 +7,7 @@ function masterData = appendSummarizedTrialData(masterData)
     fConv = 0.1034;
     
     %% Set variable names
-    varNames = {'porTimeMoving', 'medMovingSpeed','framesTracked', 'porTimeInactive', 'porTimeNursing', 'porTimePatrolling', 'porTimeForaging', 'porTimeExploring', 'distanceFromSocialCenter'};
+    varNames = {'porTimeMoving', 'medMovingSpeed','framesTracked', 'porTimeInactive', 'porTimeNursing', 'porTimePatrolling', 'porTimeForaging', 'porTimeExploring', 'distanceFromSocialCenter', 'porTimeInactiveForaging'};
     
     %Load in preset ROIs for foraging chamber
     load('/Users/james/Dropbox/Work/Neonicotinoids/ChronicExposure/Data/TrackingData/foragingROIs.mat');
@@ -150,6 +150,7 @@ function masterData = appendSummarizedTrialData(masterData)
                 tmp(:,:,7) = sum(nectarForagingIndex + pollenForagingIndex)./trackableFrames;
                 tmp(:,:,8) = sum(exploringIndex)./trackableFrames;
                 tmp(:,:,9) = distanceFromCenter;
+                tmp(:,:,10) = sum(inactiveForagingIndex)./trackableFrames; %portion of time inactive total
                 
                 if ~exist('sumDat') %If "sumDat" doesn't exist or has been cleared, make it
                     sumDat = tmp;

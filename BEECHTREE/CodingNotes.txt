@@ -1,0 +1,15 @@
+Notes Dec 21:
+
+-Code for thermal tracking partially complete (working in "processBEECHTREEcolonyFodler"
+	-assumption currently is that there's one folder with stationary cameras (so one tform object to translate between cameras that works for all files)
+	
+	
+TO DO:
+	-add in function in the beginning to add in metadata
+		-Introduce temperature data (figure out what format this should be in, and how to reconcile current multiple forms!
+		-manually identify ROIs for temperature probes (once for colony, perhaps provide visual that these work across all trials?
+		-Incorporate option to mark locations of brood and food pots? Does this have to be separate for each trial? adapt from old code
+	
+	
+		
+		

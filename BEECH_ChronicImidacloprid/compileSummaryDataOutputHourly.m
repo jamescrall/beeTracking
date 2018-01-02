@@ -1,5 +1,6 @@
 qualThresh = 30;
 
+% Need to run 'compileAndAnalyzeMaster' first 
 
 for i = 1:numel(masterData)
     %%
@@ -40,5 +41,5 @@ for i = 1:numel(masterData)
     
 end
 %%
-writetable(hourlyData,'/Users/james/Documents/chronicBeeImidacloprid/summaryDataHourly.csv');
+writetable(hourlyData,'/Users/james/Documents/chronicBeeImidacloprid/summaryDataHourlyDec82017.csv');
 clear hourlyData
