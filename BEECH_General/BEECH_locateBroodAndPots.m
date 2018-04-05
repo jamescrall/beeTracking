@@ -9,7 +9,7 @@ switch choice
         
     case 'No'
         disp('No brood data loaded')
-        if exist('brood', 1)
+        if exist('brood', 'var')
             clear brood
         end
 end
@@ -39,7 +39,6 @@ for i = 1:nvid
         end
         
         allFrames(:,:,i) = im;
-        i
     catch
         continue
     end
@@ -141,9 +140,10 @@ while term == 0
 end
 %%
 cd(uigetdir);
-tmp = strsplit(pwd,'/');
-name = tmp{end};
-name = strcat(name, '_brood.mat');
+filePrefix = inputdlg('output filename prefix:');
+filePrefix = filePrefix{1}; %Remove character from cell
+
+name = strcat(filePrefix, '_brood.mat');
 
 %cd(uigetdir(pwd, 'Pick a directory to save to'));
 save(name, 'brood', 'backImage', 'filelist');

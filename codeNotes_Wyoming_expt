@@ -1,0 +1,18 @@
+Code Notes: Wyoming tracking experiments
+
+BEECH_locateBroodAndPots
+	-General function: to allow you (a human) to efficiently record location of brood and food storage pots from a tracking video (or set of videos)
+	You're immediately prompted to choose a folder containing videos, and optionally you can point to an existing Matlab data file (.mat) containing relevant brood information (this gives you a starting place to edit. I.e. say you already generated data for the same colony the day before, load that data and edit, which will be faster than marking everything from scratch
+	
+	Button functions
+	'1' - mark location of a brood pot
+	'2' - mark location of a honey pot
+	'3' - mark location of wax covering
+	'f' and 'b' - move forward and back (first image is a composite background across all sampled frames, moving forward ('f') lets you sample different individual frames
+	'd' - delete the point you're currently hovering over
+	'c' - clear all data - you'll be prompted to make sure you want to do this
+	'=' - zoom in
+	'-' - zoom out
+	
+	when done, press 'q'
+	'q' - exit marking mode and save data

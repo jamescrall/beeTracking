@@ -9,6 +9,7 @@ function playThermAndVisVidsWithTrackingData(thermVid, visVid, nestTracks)
     %       nestTracks - tracked nest data, after running through
     %       "appendThermalCamCoordinates"
     
+    cm = inferno(200);
     %for i = 1:vid.NumberOfFrames
     for i = 1:40
         %%
@@ -16,7 +17,7 @@ function playThermAndVisVidsWithTrackingData(thermVid, visVid, nestTracks)
         im = read(thermVid,i);
         im = convertThermalImage(im);
         imagesc(im);
-        colormap hot
+        colormap(cm)
         hold on
         plot(nestTracks(i,:,5), nestTracks(i,:,6), 'go');
         hold off

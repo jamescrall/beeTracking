@@ -1,4 +1,4 @@
-cal% All relevant files need to be loaded into a single, separate folder (no data from other experiments)
+% All relevant files need to be loaded into a single, separate folder (no data from other experiments)
 [filename pathname] = uigetfile('*');
 cd(pathname);
 %% Load in data set from single experiment
@@ -24,6 +24,7 @@ temps2M = movmean(temps2,50); %Smooth temperature trace
 temps3M = movmean(temps3,50); %Smooth temperature trace
 temps4M = movmean(temps4,50); %Smooth temperature trace
 
+tempsM = mean([temps1M' temps2M' temps3M' temps4M'],2);
 plot(i, 'r');
 hold on
 plot(tempsM, 'b');
@@ -265,41 +266,86 @@ sumDatS(:,:,5) = nan(size(sumDatS,1), size(sumDatS,2));
 range = 100:600;
 sumDatSSub = sumDatS(range,:,:);
 imagesc(~isnan(sumDatSSub(:,:,1)))
-%%
 
-outVid = VideoWriter('sampleTracking.mp4');
-open(outVid);
-for i = 1:500
+%% Add behavioral data
+
+
+
+%% calculate behavioral data
+cutoff = 100;
+posMatrix = calculateLocationMatrix(sumDatS, brood, cutoff);
+
+activityMat = calculateActivityMatrix(sumDatS);
+vels = log10(activityMat(:,:,4));
+velsC = reshape(vels, numel(vels),1);
+hist(velsC, 100);
+velCutoff = 0.75;
+activity = nan(size(vels));
+
+activity(vels < velCutoff) = 0;
+activity(vels > velCutoff) = 1;
+%%
+vid = 1;
+
+if vid == 1
+    outVid = VideoWriter('sampleTracking');
+    open(outVid);
+end
+
+
+%
+for i = 2:500
     %%
     visIm = read(visVid,i);
     subplot(1,2,1);
     imshow(imadjust(rgb2gray(visIm)));
     hold on
     for j = 1:numel(tagsub)
-        if ~isnan(sumDatS(i,j,1))
-           	plot(sumDatS(i,j,1), sumDatS(i,j,2), 'go');
-            text(sumDatS(i,j,1) + 10, sumDatS(i,j,2) + 10, strcat('ID: ', num2str(tagsub(j))), 'Color','g');
-            sumDatS(i,j,5) = temp;
+        pos = posMatrix(i,j);
+        act = activity(i,j);
+        
+        if ~isnan(pos) & ~isnan(act)
+            if  pos == 1
+                col = 'y';
+            elseif pos == 2
+                col = 'r';
+            elseif pos == 0 & act == 0
+                col = 'b';
+            elseif pos == 0 & act == 1
+                col = 'g';
+            end
+            if ~isnan(sumDatS(i,j,1))
+                plot(sumDatS(i,j,1), sumDatS(i,j,2), '.', 'Color', col, 'MarkerSize', 30);
+                text(sumDatS(i,j,1) + 10, sumDatS(i,j,2) + 10, strcat('ID: ', num2str(tagsub(j))), 'Color',col, 'FontSize', 25);
+                %sumDatS(i,j,5) = temp;
+            end
         end
     end
     axis equal
     hold off
-    set(gca, 'Position', [0 -0.1 0.55 1.1]);
+    set(gca, 'Position', [0.05 -0.05 0.45 1.1], 'XTick', [], 'YTick', []);
+    set(gcf, 'Color','k');
     %%
     subplot(1,2,2);
     thermIm = read(thermVid,i); %Read in thermal video frame
     thermIm = convertThermalImage(thermIm); %Convert raw data to deg C
     thermIm = thermIm + medOffset(i);
-    imagesc(thermIm, [22 40]);
-    colorbar
+    imagesc(thermIm, [24 38]);
+    colormap(cm_magma)
+    colorbar('FontSize', 20, 'Color', 'w');
     hold on
-    plot(sumDatS(i,:,3), sumDatS(i,:,4), 'ro');
+    plot(sumDatS(i,:,3), sumDatS(i,:,4), 'g.', 'MarkerSize', 20);
     
     %plot(sumDatS(i,:,3), sumDatS(i,:,4),'ro');
     for j = 1:numel(tagsub)
         if ~isnan(sumDatS(i,j,1))
-            temp = takeTempReadingFromThermalImage(thermIm, sumDatS(i,j,3), sumDatS(i,j,4));
-            text(sumDatS(i,j,3) + 10, sumDatS(i,j,4) + 10, strcat(num2str(round(temp,2)), {' Deg C'}), 'Color','r');
+            if ~isnan(sumDatS(i,j,5))
+                temp = sumDatS(i,j,5);
+            else
+                temp = takeTempReadingFromThermalImage(thermIm, sumDatS(i,j,3), sumDatS(i,j,4));
+            end
+            
+            text(sumDatS(i,j,3) + 4, sumDatS(i,j,4) + 10, strcat(num2str(round(temp,2)), {' Deg C'}), 'Color','g', 'FontSize', 20);
             sumDatS(i,j,5) = temp;
         end
     end
@@ -308,19 +354,24 @@ for i = 1:500
     %axis equal
     hold off
     
-        set(gca, 'Position', [0.5 0 0.65 0.9]);
-
+    set(gca, 'Position', [0.52 0.05 0.4 0.9], 'XTick', [], 'YTick', []);
+    
     %%
-    writeVideo(outVid, getframe(gcf));
+    if vid == 1
+        writeVideo(outVid, getframe(gcf));
+    end
     % %
     % %     figure(2);
     % %     plot(movmean(diff(videoTimes), 20))
     % %     vline(i);
     
-    
+    i
 end
-close(outVid);
 
+
+if vid == 1
+    close(outVid);
+end
 
 
 %% Single frame example
@@ -400,9 +451,9 @@ subplot(1,2,1);
 
 for i = 1:nbees
     
-plot(times,sdTemp(:,i), 'Color', cols(i,:));
-hold on
-
+    plot(times,sdTemp(:,i), 'Color', cols(i,:));
+    hold on
+    
 end
 ylim(yl);
 
@@ -417,5 +468,5 @@ ylim(yl);
 
 
 %% Save data
-save('trackingData', 'sumDatS', 'data', 'offsets');
+save('trackingDataJan16.mat', 'sumDatS', 'data', 'offsets', 'brood', 'tagsub', 'medOffset');
 
