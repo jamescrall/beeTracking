@@ -1,4 +1,4 @@
-function backIm = calculateBackgroundFromVideo(vid,nframes)
+function backIm = calculateBackgroundFromVideo(vid,nframes, qntl)
     %
     % Inputs:
     %   vid - VideoReader object
@@ -16,5 +16,7 @@ function backIm = calculateBackgroundFromVideo(vid,nframes)
         
     end
     
-    backIm = median(backStack,3);
+    %backImMed = median(backStack,3);
+    %backIm = mode(backStack,3);
+    backIm = quantile(backStack,qntl, 3);
 end

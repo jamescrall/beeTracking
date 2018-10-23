@@ -35,8 +35,7 @@ parfor i = 1:nframes
     impd = imdilate(imd,se); %im permissive dilation
     
     imf = im.*uint8(impd);
-    F = locateCodes(imf,'threshMode', 1,'sizeThresh', [300 1500], 'bradleyFilterSize', brFilt, 'bradleyThreshold', brThresh, 'vis', 1);
-    if ~isempty(F)
+'vis',     if ~isempty(F)
         rtags = [F.number];
         for j = 1:ntags
             

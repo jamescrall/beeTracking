@@ -1,4 +1,4 @@
-function [nestBehMetrics] = calculateRawNestMetrics(nestTracks, brood)
+function [nestBehMetrics outputMetrics] = calculateRawNestMetrics(nestTracks, brood)
     %
     %
     %Inputs:
@@ -15,16 +15,25 @@ function [nestBehMetrics] = calculateRawNestMetrics(nestTracks, brood)
     %
     %
     % Outputs:
+    %   n x m x Z matrix, where n = # of frame,s m = num bees, and Z is the
+    %   number of estimated metrics (detailed below)
     %
+    %   speed
+    %   abs rotational vel
     %
+    %   distance to nearest brood
+    %   orientation to nearest brood
     
+    %   distance to nearest full pot
+    %   angle to nearest full pot
     %% Heal missing data
     for i = 1:size(nestTracks,3)
-        nestTracks(:,:,i) = fixShortNanGaps(nestTracks(:,:,i), 5);
+        %for i = 1:6
+        nestTracks(:,:,i) = fixShortNanGaps(nestTracks(:,:,i), 10);
     end
     
     %%
-    vis = 1
+    vis = 0; %Visualize example data?
     if vis == 1
         for i = 1:size(nestTracks,1)
             %%
@@ -46,43 +55,150 @@ function [nestBehMetrics] = calculateRawNestMetrics(nestTracks, brood)
     end
     
     
-    %%
-    outputMetrics = {'distanceToNearestBrood', 'angleToNearestBrood', 'distanceToNearestWaxpots', ...
-        'angleToNearestWaxpot', 'distanceFromNestCenter', 'distanceToForagingExit', 'speed'};
     
+    %% Hard coded foraging exit location
+    foragingExitLocation = [3500 1475];
     
-    %%
+    %% Distance to physical nest structure
     
     broodPos = brood(char(brood(:,3)) == '1', 1:2);
     wpPos = brood(char(brood(:,3)) == '2', 1:2);
-        %% distance To nest structures
-        
-    broodDist = nan(size(nestTracks(:,:,1)));
-    minBroodDist = broodDist;
+    %% distance To nest structures
+    vis = 0;
+    %Create empty vectors for output metrics
+    minBroodDists = nan(size(nestTracks(:,:,1)));
+    minBroodDistAngles = minBroodDists;
+    minWpDists = minBroodDists;
+    minWpDistAngles = minBroodDists;
     
+    h = waitbar(0, 'calculating metrics across frames');
     for i = 1:size(nestTracks,1)
         %%
-        dists = pdist2(permute(nestTracks(i,:,1:2), [2 3 1]), broodPos(:,1:2));
-        
+        broodDists = pdist2(permute(nestTracks(i,:,1:2), [2 3 1]), broodPos(:,1:2));
+        wpDists = pdist2(permute(nestTracks(i,:,1:2), [2 3 1]), wpPos(:,1:2));
+        waitbar(i/size(nestTracks,1), h);
         for j = 1:size(nestTracks,2)
             %%
-            minBroodDist = nanmin(dists(j,:));
-            minBroodDistInd = find(dists(j,:) == minBroodDist);
-            
-            
-            if vis == 1
-                %%
-                plot(nestTracks(i,:,1), nestTracks(i,:,2), 'ko');
-                hold on
-                BEECH_plotBrood(brood, 200, 0.5);
-                plot(nestTracks(i,j,1), nestTracks(i,j,2), 'ro');
-                plot(broodPos(minBroodDistInd,1), broodPos(minBroodDistInd,2), 'go')
-                hold off
-                axis equal
+            if ~isnan(nestTracks(i,j,1)); %Does data exist for this individual on this frame?
+                minBroodDist = nanmin(broodDists(j,:)); %minimum distance to a brood object
+                minBroodDistInd = find(broodDists(j,:) == minBroodDist); %Index for this brood
+                v1 = [diff(nestTracks(i,j,[1 3])), diff(nestTracks(i,j,[2 4]))]; %orientation vector
+                v2 = [diff([nestTracks(i,j,1) broodPos(minBroodDistInd,1)]), diff([nestTracks(i,j,2) broodPos(minBroodDistInd,2)])]; %Vector to nearest brood
+                minBroodDistAngle = atan2(abs(det([v1;v2])),dot(v1,v2)); %Angle between these vectors
+                
+                
+                minWpDist = nanmin(wpDists(j,:));
+                minWpDistInd = find(wpDists(j,:) == minWpDist);
+                v1 = [diff(nestTracks(i,j,[1 3])), diff(nestTracks(i,j,[2 4]))]; %orientation vector
+                v2 = [diff([nestTracks(i,j,1) wpPos(minWpDistInd,1)]), diff([nestTracks(i,j,2) wpPos(minWpDistInd,2)])]; %Vector to nearest brood
+                minWpDistAngle = atan2(abs(det([v1;v2])),dot(v1,v2)); %Angle between these vectors
+                
+                %Write to memory
+                minBroodDists(i,j) = minBroodDist;
+                minBroodDistAngles(i,j) = minBroodDistAngle;
+                minWpDists(i,j) = minWpDist;
+                minWpDistAngles(i,j) = minWpDistAngle;
+                
+                if vis == 1 %Visualize check that closet nest elements are being correctly identified. Currently set not to show
+                    %%
+                    plot(nestTracks(i,:,1), nestTracks(i,:,2), 'ko');
+                    hold on
+                    BEECH_plotBrood(brood, 200, 0.5);
+                    plot(nestTracks(i,j,1), nestTracks(i,j,2), 'ro');
+                    plot(broodPos(minBroodDistInd,1), broodPos(minBroodDistInd,2), 'go');
+                    plot(wpPos(minWpDistInd,1), wpPos(minWpDistInd,2), 'mo')
+                    
+                    hold off
+                    axis equal
+                    drawnow
+                    pause(1);
+                end
             end
-            j = j+1;
+            
         end
-        
     end
+    
+    close(h);
+    
+    %% Social distance
+    
+    distMat = calculatePairwiseDistanceMatrix(nestTracks(:,:,1:2));
+    distMat(distMat == 0) = NaN;
+    meanDistanceToOtherBees = permute(nanmedian(distMat,2), [3,1,2]);
+    minDistanceToOtherBees = permute(nanmin(distMat, [], 2), [3,1,2]);
+    
+    
+    %% distance metrics
+    %nestCenter = [nanmean(nanmean(nestTracks(:,:,1))) nanmean(nanmean(nestTracks(:,:,2)))];
+    nestCenter = nanmean(brood(:,1:2));
+    
+    distToNestCenter = sqrt((nestTracks(:,:,1) - nestCenter(1)).^2 + (nestTracks(:,:,2) - nestCenter(2)).^2); %Calculate distance to nest center
+    
+    distToForagingExit = sqrt((nestTracks(:,:,1) - foragingExitLocation(1)).^2 + (nestTracks(:,:,2) - foragingExitLocation(2)).^2); %Calculate distance to nest center
+    
+    %distToQueen = sqrt((bsxfun(@minus, nestTracks(:,:,1), nestTracks(:,1,1))).^2 + (bsxfun(@minus, nestTracks(:,:,2), nestTracks(:,1,2))).^2); %Calculate distance to nest center
+    %Removing dist to queen, becuase you have no idea when the queen's not
+    %there
+    
+    %% Dynamic metrics
+    speed = sqrt(diff(nestTracks(:,:,1)).^2 + diff(nestTracks(:,:,2)).^2); %Calculate speed
+    speed = [speed ; nan(size(speed,2),1)']; %pad last row with nans
+    speed = log10(speed); %log transformat
+    
+    LPspeed = nan(size(speed)); %lowpass speed
+    for zz = 1:size(LPspeed,2)
+        LPspeed(:,zz) = movmean(speed(:,zz), 20);
+    end
+    LPspeed = log10(LPspeed); %log transformat
+    
+    MPspeed = nan(size(speed)); %med-pass speed
+    for zz = 1:size(MPspeed,2)
+        MPspeed(:,zz) = movmean(speed(:,zz), 4);
+    end
+    MPspeed = log10(MPspeed); %log transformat
+    
+    xor = diff(nestTracks(:,:,[1 3]), 1,3);
+    yor = diff(nestTracks(:,:,[2 4]), 1,3); %orientation vector
+    
+    %orVec = cat(3, xor, yor);
+    orVec = atan2(yor,xor);
+    angSpeed = diff(orVec);
+    
+    %Correct discontinuities
+    ind = angSpeed < -pi;
+    angSpeed(ind) = angSpeed(ind) + 2*pi;
+    ind = angSpeed > pi;
+    angSpeed(ind) = angSpeed(ind) - 2*pi;
+    
+    %Make absolute
+    angSpeed = log10(abs(angSpeed));
+    %hist(reshape(abs(angSpeed), numel(angSpeed), 1), 200);
+    
+    %Pad with nans
+    angSpeed = [angSpeed; nan(size(angSpeed,2), 1)'];
+    
+    %brood approach speed
+    broodApproachSpeed = log10(diff(minBroodDists));
+    broodApproachSpeed = [broodApproachSpeed; nan(size(broodApproachSpeed,2), 1)'];
+    
+    %Waxpot approach speed
+    waxpotApproachSpeed = log10(diff(minWpDists));
+    waxpotApproachSpeed = [waxpotApproachSpeed; nan(size(waxpotApproachSpeed,2), 1)'];
+    
+    
+    %% output
+    outputMetrics = {'distanceToNearestBrood', 'angleToNearestBrood', 'distanceToNearestWaxpot', ...
+        'angleToNearestWaxpot', 'distanceFromNestCenter', 'distanceToForagingExit', 'speed', ...
+        'angularSpeed',  'meanDistToNestmates', 'minDistToNestmate', 'broodApproachSpeed', ...
+        'wpApproachSpeed', 'LPSpeed','MPspeed'};
+    
+    nestBehMetrics = cat(3,minBroodDists, minBroodDistAngles, minWpDists, minWpDistAngles, distToNestCenter, ...
+        distToForagingExit, speed, angSpeed, meanDistanceToOtherBees, minDistanceToOtherBees, ...
+        broodApproachSpeed, waxpotApproachSpeed, LPspeed, MPspeed);
+    
+    %To add:
+    %Thoracic temp
+    %Distance to queen?
+    %Deviation of speed/angular speed?
     
     

@@ -83,7 +83,7 @@ function masterData = appendSummarizedTrialData(masterData)
                     distMat(:,:,zz) = squareform(pdist([x' y']));
                 end
                 %Set distance at 10 mm, convert to pixels
-                distThresh = 10/nConv;
+                distThresh = 15/nConv; %
                 intMat = distMat;
                 intMat(distMat < distThresh) = 1;
                 intMat(distMat >= distThresh) = 0;
