@@ -19,6 +19,8 @@ masterData = [masterData1 masterData2 masterData3]; %create master
 clear masterData1
 clear masterData2
 clear masterData3
+
+
 %%
 masterData = appendSummarizedTrialData(masterData)
 

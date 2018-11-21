@@ -14,14 +14,16 @@ filelist = dir('**/*NC.avi');
 
 % Optimize tracking parameters on one of the videos
 if optimize == 1
-threshVals = [0.01 0.1 0.5 1 2 3 4 5];
-filtVals = [5 8 10 12 14 16 18 20 25 30];
+threshVals = [0.01 0.1 0.5 0.8 1 1.5 2 2.5 3 4 5];
+filtVals = [5 8 10 11 12 13 14 15 16 18 20 25 30];
 
 nframes = 20;
 ind = floor(numel(filelist)/2); %Which video to use? take one from the middle
 vid = VideoReader([filelist(ind).folder '/' filelist(ind).name]);
 
-[brThresh brFilt optTime] = optimizeTrackingParameters(vid, threshVals, filtVals, nframes, taglist)
+metadata = optimizeTrackingParameters(vid, threshVals, filtVals, nframes, taglist);
+save('nestTrackingOptimization.mat', 'metadata');
+
 else
     % manually set values
     brThresh = 3;
@@ -47,8 +49,8 @@ filelist = dir('**/*FC.avi');
 
 % Optimize tracking parameters on one of the videos
 if optimize == 1
-threshVals = [0.01 0.1 0.5 1 2 3 4 5];
-filtVals = [5 8 10 12 14 16 18 20 25 30];
+threshVals = [0.01 0.1 0.5 0.8 1 1.5 2 2.5 3 4 5];
+filtVals = [5 8 10 11 12 13 14 15 16 18 20 25 30];
 
 nframes = 20;
 ind = floor(numel(filelist)/2); %Which video to use? take one from the middle
