@@ -64,11 +64,17 @@ function [filelist] = trackAllVideosInDirectoryPar(direc, optimize, brFilt, brTh
     
     % Loop across videos
     for i = 1:numel(filelist)
-        vid = VideoReader([filelist(i).folder '/' filelist(i).name]);
-        trackingData = trackBEEtagVideoP(vid, brFilt, brThresh, taglist(:,1));
-        filelist(i).trackingData = trackingData;
-        filelist(i).taglist = taglist;
-        i;
+        try
+            vid = VideoReader([filelist(i).folder '/' filelist(i).name]);
+            trackingData = trackBEEtagVideoP(vid, brFilt, brThresh, taglist(:,1));
+            filelist(i).trackingData = trackingData;
+            filelist(i).taglist = taglist;
+            i
+            filelist(i).valid = 1;
+        catch
+            disp(['Error reading file ' filelist(i).name ', skipping']);
+            continue
+        end
         %% Save output
         outfile = [direc '/' textTag 'trackingDataMaster.mat'];
         save(outfile, 'filelist')
