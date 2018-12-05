@@ -36,10 +36,10 @@ function [speedMat activityMat] = calculateActivityMatrix(nestData, varargin)
         
         if length(varargin) > 1
             
-            tms = varargin{2} %Extract 2nd optional input
+            tms = varargin{2}; %Extract 2nd optional input
             
             if numel(tms) == 1 %Is that input a single value? If so, calculate as a constant frame rate
-                preVels = calculateSpeedConstantRate(nestData, tms)
+                preVels = calculateSpeedConstantRate(nestData, tms);
                 
             elseif numel(tms) > 1 %Otherwise,
                 if size(nestData,1) == numel(tms)
@@ -60,7 +60,7 @@ function [speedMat activityMat] = calculateActivityMatrix(nestData, varargin)
         
         thresh = 10^-3.9; %If not supplied, use standard activity threshold
         fps = 2;
-        preVels = calculateSpeedConstantRate(nestData, fps)
+        preVels = calculateSpeedConstantRate(nestData, fps);
     end
     
     

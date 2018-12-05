@@ -65,9 +65,9 @@ while term == 0
     end
     
     [x y button] = ginput(1); %Get one set of points from current interface
-    %"1" for brood, "2" for honeypots, "3" for wax cover
+    msgbox({"Labels:""1: eggs", "2: larvae", "3: pupae", "4:});
     
-    if char(button) == '1' | char(button) == '2' | char(button) == '3' %| char(button) == '4' | char(button) == '5' | char(button) == '6' | char(button) == '7'
+    if char(button) == '1' | char(button) == '2' | char(button) == '3' | char(button) == '4' | char(button) == '5' | char(button) == '6' | char(button) == '7'
         if ~exist('brood')
             brood = [x y button];
         else

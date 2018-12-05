@@ -1,19 +1,71 @@
 %% Load metadata
+%Master is a folder with multiple colonies, each containing multple days
 
 %  Manually specify master data file
-masterData = struct();
+%masterData = struct();
 uiwait(msgbox('Choose .mat file with tracking data'));
-[file path] = uigetfile('*trackingData*.mat');
+[file path] = uigetfile('*trackingMasterData.mat');
 load([path file]); %Loads objects "nestTrackingDataMaster" and "forageTrackingDataMaster"
-nestData = nestTrackingDataMaster;
-forageData = forageTrackingDataMaster;
-clear nestTrackingDataMaster forageTrackingDataMaster
+% nestData = nestTrackingDataMaster;
+% forageData = forageTrackingDataMaster;
+% clear nestTrackingDataMaster forageTrackingDataMaster
 
-%  Manually specify tform object
+%%  Manually specify tform object
 uiwait(msgbox('Choose .mat file with correct tform image registration object'));
 [file path] = uigetfile('*tform.mat');
 load([path file]); %Loads "tform" object
-masterData.tform = tform;
+
+for i = 1:numel(masterData)
+    masterData(i).tform = tform;
+end
+
+%% append thermal file names
+for i = 1:numel(masterData)
+    trackingData = masterData(i).trackingData;
+    for j = 1:numel(trackingData)
+        trackingData(j).thermFilename = strrep(trackingData(j).name, 'NC.avi', 'TC.mj2');
+    end
+    masterData(i).trackingData = trackingData;
+end
+%% Gather rois for thermal probes
+
+
+cmp = inferno(200);
+
+for i = 1:numel(masterData)
+    vidDat = masterData(i).trackingData(20);
+    nestFile = [vidDat(1).folder '/' vidDat(1).name];
+    nestVid = VideoReader(nestFile);
+    thermFile = strrep(nestFile, 'NC.avi', 'TC.mj2');
+    thermVid = VideoReader(thermFile);
+    visIm = read(nestVid,1);
+    thermIm = read(thermVid,1);
+    
+    subplot(1,2,1);
+    imshow(imadjust(rgb2gray(visIm)));
+    subplot(1,2,2);
+    imagesc(thermIm)
+    colormap(cmp);
+    title('define ROI for top probe');
+    refPol1 = roipoly;
+    
+    title('define ROI for bottom probe');
+    refPol2 = roipoly;
+    imagesc(refPol1 + refPol2)
+    
+    clear thermVid
+    clear nestFile
+    clear thermFile
+    
+end
+
+
+
+%% Append brood data
+
+masterData = BEECH_appendBroodMapsToMasterdata(masterData);
+
+%%
 %
 %msgbox('Navigate to parent folder with video data');
 % Files that need to be present in the master directory with video files:
@@ -82,25 +134,7 @@ clear temps
 out = inputdlg({'temp sensor 1 index', 'temp sensor 2 index'}, 'Define indices for temp sensors', [1 30]);
 tempInd1 = str2num(out{1});
 tempInd2 = str2num(out{2});
-%% Manually specify ROIs
-uiwait(msgbox('Navigate to parent folder containing video data'));
-cd(uigetdir());
-i = 17;
-cmp = inferno(200)
-nestFile = nestData(i).name;
-list = dir(['**/*' nestFile]); %search for nest tracking data file
-nestFile = [list(1).folder '/' list(1).name];
-thermFile = strrep(nestFile, 'NC.avi', 'TC.mj2');
-thermVid = VideoReader(thermFile);
-%Specify ROIs for thermal probes
-thermIm = read(thermVid,1);
-imagesc(thermIm)
-colormap(cmp);
 
-
-refPol1 = roipoly;
-refPol2 = roipoly;
-imagesc(refPol1 + refPol2)
 
 
 %% Analyze thermal videos

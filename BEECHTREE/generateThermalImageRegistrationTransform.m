@@ -1,10 +1,12 @@
 
-%Point to thermal video
+%% Point to thermal video
+uiwait(msgbox('Choose thermal video'));
+
 [filename pathname] = uigetfile('*');
 cd(pathname);
 
 
-%% Load in data set from single experiment
+% Load in data set from single experiment
 
 thermVid = VideoReader(filename);
 
@@ -13,7 +15,6 @@ visVid = VideoReader(visFile);
 
 playThermAndVisVids(thermVid, visVid);
 close all
-%%
 %% Collect registration points
 %Set color map
 m = 255;
@@ -37,14 +38,14 @@ cpselect(thermImRGB, visIm)
 subplot(2,1,1)
 imshow(thermImRGB)
 hold on
-plot(movingPoints1(:,1), movingPoints1(:,2), 'go')
+plot(movingPoints(:,1), movingPoints(:,2), 'go')
 hold off;
 
 
 subplot(2,1,2)
 imshow(visIm)
 hold on
-plot(fixedPoints1(:,1), fixedPoints1(:,2), 'go')
+plot(fixedPoints(:,1), fixedPoints(:,2), 'go')
 hold off;
 % %%
 % clear xv yv xtt ytt xt yt
@@ -140,6 +141,7 @@ while 1
     out = tformfwd(tform, [x y]);
     plot(out(:,1), out(:,2), 'ro');
     hold off
+    drawnow
 end
 
 %%
