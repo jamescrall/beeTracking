@@ -102,7 +102,7 @@ for i = 1:numel(masterData)
         try
             thermVid = VideoReader([trackingData(j).folder '/' trackingData(j).thermFilename]);
         catch
-            disp(['Error loading thermal video ' thermVid.name ', skipping...']);
+            disp(['Error loading thermal video ' thermVid ', skipping...']);
             continue
         end
         bodyTemps = readTempsFromThermalVideos(thermVid, trackingData(j).tagThermalCoordinates);
@@ -119,25 +119,11 @@ for i = 1:numel(masterData)
         %ntags)
         %2. Extract fgrame-by frame temps of brood (nframes x nbrood)
         %3. Ditto for temp probes (nframes x 2)
-        waitbar(j/numel(trackingData), h);
+waitbar(j/numel(trackingD
     end
-    close(h);
     masterData(i).trackingData = trackingData;
 end
 
-save('trackingDataMaster_appendedTemps.mat', 'masterData');
-%% Load temperature data
-tempDir = dir('**/*temperatures*.mat');
-
-tempsM = [];
-timesM = [];
-for i = 1:numel(tempDir)
-%%
-
-load([tempDir(i).folder '/' tempDir(i).name]);
-timesM = [timesM ; times'];
-tempsM = cat(1, tempsM, temps);
-end
 
 %%
 %

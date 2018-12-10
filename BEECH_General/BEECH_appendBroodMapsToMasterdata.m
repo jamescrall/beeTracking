@@ -1,34 +1,36 @@
 function masterData = BEECH_appendBroodMapsToMasterdata(masterData)
-    %% append broodData to masterData file
+%% append broodData to masterData file
+
+for i = 1:numel(masterData) %Loop across colonies
+    %%
+    disp(['Beginning colony ' num2str(i) ' of ' num2str(numel(masterData))]);
+    colony = masterData(i).colPos; %identify colony position
+    expRound = masterData(i).expRound; %identify experimental round
+    trackingData = masterData(i).trackingData; %Extract trackng data
     
-    for i = 1:numel(masterData) %Loop across colonies
+    times = [trackingData.datenum];
+    days = datenum(datestr(times, 'yyyymmdd'), 'yyyymmdd');
+    
+    uniqueDays = unique(days);
+    
+    for j = 1:numel(uniqueDays)
         %%
-        disp(['Beginning colony ' num2str(i) ' of ' num2str(numel(masterData))]);
-        colony = masterData(i).colPos; %identify colony position
-        expRound = masterData(i).expRound; %identify experimental round
-        trackingData = masterData(i).trackingData; %Extract trackng data
+        dayIndex = find(days == uniqueDays(j));
         
-        times = [trackingData.datenum];
-        days = datenum(datestr(times, 'yyyymmdd'), 'yyyymmdd');
+        %Define file prefix
+        filePrefix = ['colPos', num2str(colony), '_', datestr(uniqueDays(j)),  ...
+            '_expRound', num2str(expRound)];
         
-        uniqueDays = unique(days);
+        %Check if file already exists
+        outfilename = strcat(filePrefix, '_brood.mat');
+        broodFilelist = dir(['**/*' outfilename]);
         
-        for j = 1:numel(uniqueDays)
-            %%
-            dayIndex = find(days == uniqueDays(j));
+        if ~isempty(broodFilelist)
+            load([broodFilelist.folder '/' broodFilelist.name], 'brood');
+            choice = questdlg(['Brood file "' outfilename '" already exists on disk - loading. Skip analysis?'], 'Load Brood Data', 'Yes', 'No', 'No');
             
-            %Define file prefix
-            filePrefix = ['colPos', num2str(colony), '_', datestr(uniqueDays(j)),  ...
-                '_expRound', num2str(expRound)];
-            
-            %Check if file already exists
-            outfilename = strcat(filePrefix, '_brood.mat');
-            broodFilelist = dir(['**/*' outfilename]);
-            
-            if ~isempty(broodFilelist)
-                load([broodFilelist.folder '/' broodFilelist.name], 'brood');                
-                choice = questdlg(['Brood file "' outfilename '" already exists on disk - loading. Skip analysis?'], 'Load Brood Data', 'Yes', 'No', 'No');
-                if choice == 'Yes'
+            switch choice
+                case 'Yes'
                     %Write to masterData
                     for k = 1:numel(dayIndex)
                         trackingData(dayIndex(k)).brood = brood;
@@ -37,56 +39,58 @@ function masterData = BEECH_appendBroodMapsToMasterdata(masterData)
                     
                     continue
                     
-                end
-            else
-                choice = questdlg('Do you want to load existing brood data?', 'Load Brood Data', 'Yes - from file', 'Yes - from last', 'No', 'No')
-                
-                switch choice
-                    case 'Yes - from file' %Load from file?
-                        
-                        uiopen('load');
-                        
-                    case 'Yes - from last'
-                        
-                        brood = lastBrood; %Use memory
-                        
-                    case 'No'
-                        
-                        disp('No brood data loaded')
-                        
-                        if exist('brood', 'var')
-                            clear brood %Make sure there's no brood in memory
-                        end
-                end
-                
+                case 'No'
+                    msgbox('loading brood data for editing...');
             end
-            %% visualize individual movement
+        else
+            choice = questdlg('Do you want to load existing brood data?', 'Load Brood Data', 'Yes - from file', 'Yes - from last', 'No', 'No')
             
-            %Create empty brood if it doesn't exist yet
-            if ~exist('brood')
-                brood = [];
+            switch choice
+                case 'Yes - from file' %Load from file?
+                    
+                    uiopen('load');
+                    
+                case 'Yes - from last'
+                    
+                    brood = lastBrood; %Use memory
+                    
+                case 'No'
+                    
+                    disp('No brood data loaded')
+                    
+                    if exist('brood', 'var')
+                        clear brood %Make sure there's no brood in memory
+                    end
             end
-            
-            
-            
-            %Run GUI to map nest structure
-            [brood backImage sampleImageStack] = BEECH_locateBroodAndPots_output(trackingData(dayIndex), brood, filePrefix);
-            
-            %Save current brood to memory temporarily
-            lastBrood = brood;
-            
-            
-            
-            %Write to masterData
-            for k = 1:numel(dayIndex)
-                trackingData(dayIndex(k)).brood = brood;
-                trackingData(dayIndex(k)).broodFileIndex = outfilename;
-            end
-            
-            %Clear current brood iteration
-            clear brood;
             
         end
+        %% visualize individual movement
         
-        masterData(i).trackingData = trackingData; %Append modify trackingData object back into master
+        %Create empty brood if it doesn't exist yet
+        if ~exist('brood')
+            brood = [];
+        end
+        
+        
+        
+        %Run GUI to map nest structure
+        [brood backImage sampleImageStack] = BEECH_locateBroodAndPots_output(trackingData(dayIndex), brood, filePrefix);
+        
+        %Save current brood to memory temporarily
+        lastBrood = brood;
+        
+        
+        
+        %Write to masterData
+        for k = 1:numel(dayIndex)
+            trackingData(dayIndex(k)).brood = brood;
+            trackingData(dayIndex(k)).broodFileIndex = outfilename;
+        end
+        
+        %Clear current brood iteration
+        clear brood;
+        
     end
+    
+    masterData(i).trackingData = trackingData; %Append modify trackingData object back into master
+end
