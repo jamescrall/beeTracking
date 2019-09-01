@@ -49,10 +49,10 @@ function [filelist] = trackAllVideosInDirectoryPar(direc, optimize, brFilt, brTh
         nframes = 15;
         
         ind = floor(numel(filelist)/2); %Which video to use? take one from the middle
-        vid = VideoReader(fullfile(filelist(ind).folder, filelist(ind).name));
+        vid = VideoReader([filelist(ind).folder '/' filelist(ind).name]);
         
         metadata = optimizeTrackingParameters(vid, threshVals, filtVals, nframes, taglist);
-        save(fullfule(direc, textTag, 'trackingOptimization.mat'), 'metadata');
+        save(fullfule(direc textTag 'trackingOptimization.mat'], 'metadata');
         brThresh = metadata.brThreshOpt;
         brFilt = metadata.brFiltOpt;
         
@@ -65,7 +65,7 @@ function [filelist] = trackAllVideosInDirectoryPar(direc, optimize, brFilt, brTh
     % Loop across videos
     for i = 1:numel(filelist)
         try
-            vid = VideoReader(fullfile(filelist(i).folder, filelist(i).name));
+            vid = VideoReader([filelist(i).folder '/' filelist(i).name]);
             trackingData = trackBEEtagVideoP(vid, brFilt, brThresh, taglist(:,1));
             filelist(i).trackingData = trackingData;
             filelist(i).taglist = taglist;
@@ -76,7 +76,7 @@ function [filelist] = trackAllVideosInDirectoryPar(direc, optimize, brFilt, brTh
             continue
         end
         %% Save output
-        outfile = fullfile(direc, textTag, 'trackingDataMaster.mat');
+        outfile = [direc '/' textTag 'trackingDataMaster.mat'];
         save(outfile, 'filelist')
     end
     

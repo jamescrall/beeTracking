@@ -13,12 +13,31 @@ thermVid = VideoReader(filename);
 visFile = strrep(filename, 'TC.mj2', 'NC.avi');
 visVid = VideoReader(visFile);
 
-playThermAndVisVids(thermVid, visVid);
-close all
-%% Collect registration points
-%Set color map
+thermIm = read(thermVid, 1);
+visIm = read(visVid, 1);
+
 m = 255;
 clrMp = inferno(m);
+subplot(1,2,1);
+imshow(visIm);
+subplot(1,2,2);
+imagesc(convertThermalImage(thermIm));
+colormap(clrMp);
+
+toFlip = questdlg('Flip thermal image?');
+if toFlip == 'Yes'
+    flip = 1;
+    subplot(1,2,1);
+imshow(visIm);
+subplot(1,2,2);
+imagesc(imrotate(convertThermalImage(thermIm), 180));
+colormap(clrMp);
+end
+%playThermAndVisVids(thermVid, visVid);
+%close all
+%% Collect registration points
+%Set color map
+
 
 
 i = 20;
