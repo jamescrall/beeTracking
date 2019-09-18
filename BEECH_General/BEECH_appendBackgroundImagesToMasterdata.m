@@ -18,10 +18,11 @@ function masterData = BEECH_appendBackgroundImagesToMasterdata(masterData)
             %%
             dayIndex = find(days == uniqueDays(j));
             
-            [backImage backStack] = calculateBackgroundFromFilelist(trackingData(dayIndex), 30, 0.75);
+            [backImage backStack] = calculateBackgroundFromFilelist(trackingData(dayIndex), 40, 0.8);
             
             dailyBackgrounds(j).day = uniqueDays(j);
             dailyBackgrounds(j).backImage = uint8(backImage);
+            dailyBackgrounds(j).backStack = backStack;
             %Write to masterData
             for k = 1:numel(dayIndex)
                 trackingData(dayIndex(k)).day = uniqueDays(j);

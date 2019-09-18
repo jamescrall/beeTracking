@@ -235,7 +235,7 @@ save('trackingDataMaster_correctedTemps.mat', 'masterData')
 
 %% Calculate bee masks for each frame
 
-masterData = calculateBeeMasks(masterData);
+masterData = BEECH_calculateBeeMasks(masterData);
 
 
 
