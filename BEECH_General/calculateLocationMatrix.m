@@ -5,7 +5,9 @@ function posMatrix = calculateLocationMatrix(nestData, brood, cutoff)
     %   nestData:  m x n x 2(+) matrix, where m = nframes, n = nbees, and
     %   dimensions 1,2 are x and y coordinates, respectively
     %
-    %   brood: n x 3 matrix, where
+    %   brood: n x 3 matrix, where 'n' = the # of annotated brood elements,
+    %   columns 1 and 2 are x and y positions, and the third column
+    %   represents the brood type '1' for brood', '2' for waxpots
     %
     %   cutoff: distance (same dimensions as nestData and brood)
     %

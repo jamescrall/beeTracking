@@ -5,7 +5,7 @@ function inputMat = fixShortNanGaps(inputMat, maxGapSize)
     
     %%
     for j = 1:size(inputMat,2)
-        inputData = inputMat(:,j)
+        inputData = inputMat(:,j);
         for i = 2:numel(inputData)
             %%
             if isnan(inputData(i)) & ~isnan(inputData(i-1)) %If current step is nan, and previous step isn't, try to heal
